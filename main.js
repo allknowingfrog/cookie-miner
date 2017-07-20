@@ -106,6 +106,12 @@ function gameLoop() {
 
         bullets[i].x += bullets[i].vx * SPEED * delta;
         bullets[i].y += bullets[i].vy * SPEED * delta;
+
+        for(var n=0; n<enemies.length; n++) {
+            if(collides(bullets[i], enemies[n])) {
+                shove(bullets[i], enemies[n]);
+            }
+        }
     }
 
     context.clearRect(0, 0, canvas.width, canvas.height);
