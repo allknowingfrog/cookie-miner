@@ -2,13 +2,17 @@ var canvas;
 var context;
 var player;
 var enemies = [];
+var bullets = [];
 var inputs = {
     left: false,
     up: false,
     right: false,
-    down: false
+    down: false,
+    click: false
 };
 var timestamp;
+var x;
+var y;
 var SPEED = 200;
 
 function init() {
@@ -20,6 +24,9 @@ function init() {
 
     document.addEventListener('keydown', keyDown, false);
     document.addEventListener('keyup', keyUp, false);
+    document.addEventListener('mousedown', mouseDown, false);
+    document.addEventListener('mouseup', mouseUp, false);
+    document.addEventListener('mousemove', mouseMove, false);
 
     player = new Entity(0, 0, 'red');
 
@@ -51,6 +58,14 @@ function gameLoop() {
         player.y += SPEED * delta;
     }
 
+    if(inputs.click) {
+        var bullet = new Entity(0, 0, 'blue');
+        bullet.size = 5;
+        bullet.x = x;
+        bullet.y = y;
+        bullets.push(bullet);
+    }
+
     player.keepOnCanvas();
 
     for(var i=0; i<enemies.length; i++) {
@@ -75,6 +90,10 @@ function gameLoop() {
 
     for(var i=0; i<enemies.length; i++) {
         enemies[i].draw();
+    }
+
+    for(var i=0; i<bullets.length; i++) {
+        bullets[i].draw();
     }
 
     window.requestAnimationFrame(gameLoop);
@@ -112,6 +131,20 @@ function keyUp(e) {
     if(code == 40) {
         inputs.down = false;
     }
+}
+
+function mouseDown(e) {
+    inputs.click = true;
+}
+
+function mouseUp(e) {
+    inputs.click = false;
+}
+
+function mouseMove(e) {
+    var rect = canvas.getBoundingClientRect();
+    x = e.pageX - rect.left;
+    y = e.pageY - rect.top;
 }
 
 function collides(a, b) {
