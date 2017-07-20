@@ -61,8 +61,14 @@ function gameLoop() {
     if(inputs.click) {
         var bullet = new Entity(0, 0, 'blue');
         bullet.size = 5;
-        bullet.x = x;
-        bullet.y = y;
+        var offset = player.size / 2 - bullet.size / 2;
+        bullet.x = player.x + offset;
+        bullet.y = player.y + offset;
+        var dx = x - bullet.x;
+        var dy = y - bullet.y;
+        var total = Math.abs(dx) + Math.abs(dy);
+        bullet.vx = dx / total;
+        bullet.vy = dy / total;
         bullets.push(bullet);
     }
 
@@ -82,6 +88,24 @@ function gameLoop() {
             shove(player, enemies[i]);
         }
         enemies[i].keepOnCanvas();
+    }
+
+    for(var i=0; i<bullets.length; i++) {
+        if(bullets[i].getLeft() < 0) {
+            bullets[i].vx *= -1;
+        }
+        if(bullets[i].getTop() < 0) {
+            bullets[i].vy *= -1;
+        }
+        if(bullets[i].getRight() > canvas.width) {
+            bullets[i].vx *= -1;
+        }
+        if(bullets[i].getBottom() > canvas.height) {
+            bullets[i].vy *= -1;
+        }
+
+        bullets[i].x += bullets[i].vx * SPEED * delta;
+        bullets[i].y += bullets[i].vy * SPEED * delta;
     }
 
     context.clearRect(0, 0, canvas.width, canvas.height);
