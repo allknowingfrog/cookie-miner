@@ -1,6 +1,8 @@
 var canvas;
 var context;
 var player;
+var cookie = new Image();
+var bite = new Audio('bite.mp3');
 var enemies = [];
 var bullets = [];
 var inputs = {
@@ -13,6 +15,8 @@ var inputs = {
 var timestamp;
 var x;
 var y;
+var moneys = 0;
+var prices = 0;
 var SPEED = 200;
 
 function init() {
@@ -21,6 +25,8 @@ function init() {
     canvas.height = 400;
 
     context = canvas.getContext('2d');
+
+    cookie.src = 'cookie.png';
 
     document.addEventListener('keydown', keyDown, false);
     document.addEventListener('keyup', keyUp, false);
@@ -58,9 +64,10 @@ function gameLoop() {
         player.y += SPEED * delta;
     }
 
-    if(inputs.click) {
+    if(inputs.click && moneys >= prices) {
+        moneys -= prices;
         var bullet = new Entity(0, 0, 'blue');
-        bullet.size = 5;
+        //bullet.size = 5;
         var offset = player.size / 2 - bullet.size / 2;
         bullet.x = player.x + offset;
         bullet.y = player.y + offset;
@@ -70,6 +77,7 @@ function gameLoop() {
         bullet.vx = dx / total;
         bullet.vy = dy / total;
         bullets.push(bullet);
+        prices = Math.pow(10, bullets.length);
     }
 
     player.keepOnCanvas();
@@ -92,15 +100,19 @@ function gameLoop() {
 
     for(var i=0; i<bullets.length; i++) {
         if(bullets[i].getLeft() < 0) {
+            bullets[i].setLeft(0);
             bullets[i].vx *= -1;
         }
         if(bullets[i].getTop() < 0) {
+            bullets[i].setTop(0);
             bullets[i].vy *= -1;
         }
         if(bullets[i].getRight() > canvas.width) {
+            bullets[i].setRight(canvas.width);
             bullets[i].vx *= -1;
         }
         if(bullets[i].getBottom() > canvas.height) {
+            bullets[i].setBottom(canvas.height);
             bullets[i].vy *= -1;
         }
 
@@ -109,8 +121,14 @@ function gameLoop() {
 
         for(var n=0; n<enemies.length; n++) {
             if(collides(bullets[i], enemies[n])) {
-                shove(bullets[i], enemies[n]);
+                shove(enemies[n], bullets[i]);
+                bite.play();
+                moneys += 10;
             }
+        }
+
+        if(collides(bullets[i], player)) {
+            shove(player, bullets[i]);
         }
     }
 
@@ -119,12 +137,21 @@ function gameLoop() {
     player.draw();
 
     for(var i=0; i<enemies.length; i++) {
-        enemies[i].draw();
+        context.drawImage(
+            cookie,
+            0, 0, 30, 30,
+            enemies[i].x, enemies[i].y, enemies[i].size, enemies[i].size
+        );
     }
 
     for(var i=0; i<bullets.length; i++) {
         bullets[i].draw();
     }
+
+    context.font = 'bold 18px monospace';
+    context.fillStyle = 'white';
+    context.fillText('moneys: ' + moneys, 20, 30);
+    context.fillText('prices: ' + prices, 20, 60);
 
     window.requestAnimationFrame(gameLoop);
 }
@@ -198,6 +225,7 @@ function shove(a, b) {
             a.x -= move / 2;
             b.setLeft(a.getRight());
         }
+        b.vx *= -1;
     } else {
         var move = b.size - Math.abs(dy);
         if(dy > 0) {
@@ -207,5 +235,6 @@ function shove(a, b) {
             a.y -= move / 2;
             b.setTop(a.getBottom());
         }
+        b.vy *= -1;
     }
 }
