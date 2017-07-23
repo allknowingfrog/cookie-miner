@@ -1,2 +1,2 @@
-# Code Camp 2017
-allknowingfrog.github.io/code-camp-2017
+# Encode/Decode (Code Camp) Project for 2017
+[Try it!](https://allknowingfrog.github.io/cookie-miner)
